@@ -1,42 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Terminal Design System - Modern Linux Terminal Theme */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Terminal Dark Theme */
+    --background: 210 11% 8%;
+    --foreground: 120 100% 85%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 210 11% 8%;
+    --card-foreground: 120 100% 85%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 210 11% 8%;
+    --popover-foreground: 120 100% 85%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 120 100% 50%;
+    --primary-foreground: 210 11% 8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 195 100% 50%;
+    --secondary-foreground: 210 11% 8%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 11% 15%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 60 100% 50%;
+    --accent-foreground: 210 11% 8%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 210 11% 20%;
+    --input: 210 11% 15%;
+    --ring: 120 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.25rem;
+
+    /* Terminal specific colors */
+    --terminal-bg: 210 11% 8%;
+    --terminal-text: 120 100% 85%;
+    --terminal-prompt: 120 100% 50%;
+    --terminal-command: 195 100% 75%;
+    --terminal-error: 0 84% 60%;
+    --terminal-warning: 45 100% 60%;
+    --terminal-success: 120 100% 50%;
+    --terminal-comment: 0 0% 50%;
+    --terminal-string: 60 100% 70%;
+    --terminal-number: 300 100% 70%;
+    --terminal-keyword: 270 100% 70%;
+
+    /* Gradients */
+    --gradient-terminal: linear-gradient(135deg, hsl(var(--terminal-bg)), hsl(210 11% 12%));
+    --glow-green: 0 0 20px hsl(var(--primary) / 0.3);
+    
+    /* Animations */
+    --cursor-blink: cursor-blink 1s infinite;
+    --terminal-glow: terminal-glow 2s ease-in-out infinite alternate;
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +122,113 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-mono;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+  }
+}
+
+@layer components {
+  .terminal-window {
+    @apply bg-background border border-border rounded-lg shadow-2xl;
+    background: var(--gradient-terminal);
+    box-shadow: var(--glow-green), 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  .terminal-header {
+    @apply flex items-center justify-between p-3 border-b border-border;
+    background: hsl(var(--muted));
+  }
+
+  .terminal-controls {
+    @apply flex space-x-2;
+  }
+
+  .terminal-control {
+    @apply w-3 h-3 rounded-full;
+  }
+
+  .terminal-control.close {
+    @apply bg-red-500;
+  }
+
+  .terminal-control.minimize {
+    @apply bg-yellow-500;
+  }
+
+  .terminal-control.maximize {
+    @apply bg-green-500;
+  }
+
+  .terminal-body {
+    @apply p-4 font-mono text-sm leading-relaxed min-h-96 max-h-96 overflow-y-auto;
+    background: hsl(var(--terminal-bg));
+    color: hsl(var(--terminal-text));
+  }
+
+  .terminal-line {
+    @apply mb-2 flex items-start;
+  }
+
+  .terminal-prompt {
+    @apply text-primary font-bold mr-2 flex-shrink-0;
+  }
+
+  .terminal-command {
+    color: hsl(var(--terminal-command));
+  }
+
+  .terminal-output {
+    @apply whitespace-pre-wrap;
+  }
+
+  .terminal-error {
+    color: hsl(var(--terminal-error));
+  }
+
+  .terminal-success {
+    color: hsl(var(--terminal-success));
+  }
+
+  .terminal-warning {
+    color: hsl(var(--terminal-warning));
+  }
+
+  .terminal-input {
+    @apply bg-transparent border-none outline-none flex-1 text-terminal-text;
+    color: hsl(var(--terminal-command));
+  }
+
+  .cursor-blink::after {
+    content: '█';
+    color: hsl(var(--primary));
+    animation: var(--cursor-blink);
+  }
+
+  @keyframes cursor-blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  @keyframes terminal-glow {
+    0% { box-shadow: var(--glow-green); }
+    100% { box-shadow: 0 0 30px hsl(var(--primary) / 0.5); }
+  }
+
+  .syntax-keyword {
+    color: hsl(var(--terminal-keyword));
+    font-weight: bold;
+  }
+
+  .syntax-string {
+    color: hsl(var(--terminal-string));
+  }
+
+  .syntax-number {
+    color: hsl(var(--terminal-number));
+  }
+
+  .syntax-comment {
+    color: hsl(var(--terminal-comment));
+    font-style: italic;
   }
 }

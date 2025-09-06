@@ -1,11 +1,30 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Terminal } from "@/components/Terminal";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-8 pt-8">
+          <h1 className="text-4xl font-bold text-primary mb-2">
+            Nabila Ahmad Station
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Development Emulator
+          </p>
+          <p className="text-sm text-terminal-comment mt-2">
+            Full-stack development environment with GitHub, Vercel & Supabase integration
+          </p>
+        </div>
+        
+        <Terminal />
+        
+        <div className="text-center mt-8 text-xs text-terminal-comment">
+          <p>
+            Terminal shortcuts: <span className="text-terminal-warning">Ctrl+L</span> (clear), 
+            <span className="text-terminal-warning"> Tab</span> (autocomplete), 
+            <span className="text-terminal-warning"> ↑↓</span> (history)
+          </p>
+        </div>
       </div>
     </div>
   );
