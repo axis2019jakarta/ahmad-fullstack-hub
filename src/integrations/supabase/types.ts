@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      commands_history: {
+        Row: {
+          command: string
+          created_at: string
+          id: string
+          output_type: string
+          project_id: string | null
+          user_id: string
+        }
+        Insert: {
+          command: string
+          created_at?: string
+          id?: string
+          output_type: string
+          project_id?: string | null
+          user_id: string
+        }
+        Update: {
+          command?: string
+          created_at?: string
+          id?: string
+          output_type?: string
+          project_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commands_history_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -39,6 +74,81 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          framework: string | null
+          id: string
+          name: string
+          repository_url: string | null
+          status: string | null
+          supabase_project_id: string | null
+          updated_at: string
+          user_id: string
+          vercel_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          framework?: string | null
+          id?: string
+          name: string
+          repository_url?: string | null
+          status?: string | null
+          supabase_project_id?: string | null
+          updated_at?: string
+          user_id: string
+          vercel_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          framework?: string | null
+          id?: string
+          name?: string
+          repository_url?: string | null
+          status?: string | null
+          supabase_project_id?: string | null
+          updated_at?: string
+          user_id?: string
+          vercel_url?: string | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          auto_save_commands: boolean | null
+          created_at: string
+          preferred_package_manager: string | null
+          show_welcome_message: boolean | null
+          terminal_font_size: number | null
+          theme: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_save_commands?: boolean | null
+          created_at?: string
+          preferred_package_manager?: string | null
+          show_welcome_message?: boolean | null
+          terminal_font_size?: number | null
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_save_commands?: boolean | null
+          created_at?: string
+          preferred_package_manager?: string | null
+          show_welcome_message?: boolean | null
+          terminal_font_size?: number | null
+          theme?: string | null
           updated_at?: string
           user_id?: string
         }
