@@ -54,7 +54,7 @@ export default function Terminal() {
     setCommand("");
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       runCommand();
     } else if (e.key === 'ArrowUp') {
