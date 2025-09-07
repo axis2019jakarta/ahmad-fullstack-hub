@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Terminal } from "@/components/Terminal";
+import Terminal from "@/components/Terminal";
 import { MobileNav } from "@/components/MobileNav";
 import { AuthView } from "@/components/AuthView";
 import { DeveloperAbout } from "@/components/DeveloperAbout";

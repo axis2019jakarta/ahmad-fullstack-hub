@@ -51,6 +51,7 @@
     --terminal-string: 60 100% 70%;
     --terminal-number: 300 100% 70%;
     --terminal-keyword: 270 100% 70%;
+    --terminal-border: 210 11% 20%;
 
     /* Gradients */
     --gradient-terminal: linear-gradient(135deg, hsl(var(--terminal-bg)), hsl(210 11% 12%));

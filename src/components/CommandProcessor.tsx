@@ -1,487 +1,455 @@
 interface CommandResult {
-  type: 'output' | 'error' | 'success' | 'warning' | 'info' | 'multiline';
-  output: string | Array<{ type: string; content: string }>;
+  output: string;
+  type: 'success' | 'error' | 'info';
 }
 
 export class CommandProcessor {
-  private installedPackages = new Set([
-    // System tools
-    'curl', 'wget', 'git', 'nano', 'vim', 'neovim', 'htop', 'screen', 'tmux', 'tree', 
-    'grep', 'sed', 'awk', 'unzip', 'tar', 'zip', 'jq', 'sqlite3',
-    
-    // Development tools
-    'node', 'npm', 'yarn', 'pnpm', 'pip', 'pip3', 'python3', 'ruby', 'gem', 'cargo',
-    'go', 'rustc', 'java', 'javac', 'php', 'perl', 'lua', 'deno', 'bun',
-    
-    // Cloud & deployment
-    'gh', 'vercel', 'firebase', 'netlify', 'supabase', 'docker',
-    
-    // Global packages
-    'typescript', 'ts-node', 'nodemon', 'concurrently', 'http-server', 'serve', 'prisma',
-    
-    // Fun utilities
-    'neofetch', 'cmatrix', 'cowsay', 'lolcat', 'figlet', 'fortune'
-  ]);
+  private installedPackages = new Set(['react', 'vite', 'typescript', '@supabase/supabase-js']);
 
   async process(command: string): Promise<CommandResult> {
-    const [cmd, ...args] = command.trim().split(/\s+/);
-    
+    const trimmed = command.trim();
+    if (!trimmed) return { output: '', type: 'info' };
+
+    const [cmd, ...args] = trimmed.split(' ');
+
     switch (cmd.toLowerCase()) {
       case 'help':
         return this.showHelp();
-      
-      case 'ls':
-        return this.listFiles(args);
-      
-      case 'pwd':
-        return { type: 'output', output: '/home/nabila' };
-      
-      case 'whoami':
-        return { type: 'output', output: 'nabila' };
-      
-      case 'date':
-        return { type: 'output', output: new Date().toString() };
-      
       case 'clear':
-        return { type: 'info', output: '[Terminal cleared]' };
-      
+        return { output: 'CLEAR_TERMINAL', type: 'success' };
+      case 'ls':
+      case 'dir':
+        return this.listFiles(args);
+      case 'pwd':
+        return { output: '/workspace/nabila-development-station', type: 'success' };
+      case 'whoami':
+        return { output: 'nabila-developer', type: 'success' };
+      case 'date':
+        return { output: new Date().toString(), type: 'success' };
       case 'neofetch':
         return this.showNeofetch();
-      
       case 'git':
         return this.handleGit(args);
-      
-      case 'gh':
-        return this.handleGitHub(args);
-      
       case 'npm':
       case 'yarn':
       case 'pnpm':
         return this.handlePackageManager(cmd, args);
-      
       case 'node':
         return this.handleNode(args);
-      
-      case 'python3':
-      case 'python':
-        return this.handlePython(args);
-      
       case 'vercel':
         return this.handleVercel(args);
-      
       case 'supabase':
         return this.handleSupabase(args);
-      
-      case 'nano':
-      case 'vim':
-      case 'neovim':
-        return this.handleEditor(cmd, args);
-      
-      case 'code':
-        return this.handleVSCode(args);
-      
-      case 'apt':
-      case 'pkg':
-        return this.handlePackageInstall(args);
-      
-      case 'docker':
-        return this.handleDocker(args);
-      
-      case 'cowsay':
-        return this.handleCowsay(args);
-      
-      case 'figlet':
-        return this.handleFiglet(args);
-      
-      case 'fortune':
-        return this.handleFortune();
-      
-      case 'cmatrix':
-        return { type: 'success', output: 'Matrix animation started... (Press Ctrl+C to stop)' };
-      
-      case 'htop':
-        return this.showHtop();
-      
-      case 'ps':
-        return this.showProcesses();
-      
-      case 'uname':
-        return this.handleUname(args);
-      
       case 'cat':
         return this.handleCat(args);
-      
-      case 'mkdir':
-        return this.handleMkdir(args);
-      
-      case 'touch':
-        return this.handleTouch(args);
-      
       case 'echo':
-        return { type: 'output', output: args.join(' ') };
-      
+        return { output: args.join(' '), type: 'success' };
+      case 'mkdir':
+        return { output: `Directory created: ${args[0] || 'new-folder'}`, type: 'success' };
+      case 'cd':
+        return { output: `Changed directory to: ${args[0] || 'home'}`, type: 'success' };
+      case 'touch':
+        return { output: `File created: ${args[0] || 'new-file.txt'}`, type: 'success' };
+      case 'docker':
+        return this.handleDocker(args);
+      case 'code':
+        return { output: 'Opening VS Code...', type: 'success' };
+      case 'exit':
+        return { output: 'Goodbye! 👋', type: 'info' };
       default:
-        if (this.installedPackages.has(cmd)) {
-          return { type: 'success', output: `${cmd}: command executed successfully` };
-        }
-        return { type: 'error', output: `bash: ${cmd}: command not found` };
+        return { 
+          output: `Command not found: ${cmd}\nType 'help' for available commands.`, 
+          type: 'error' 
+        };
     }
   }
 
   private showHelp(): CommandResult {
     return {
-      type: 'multiline',
-      output: [
-        { type: 'success', content: '=== Nabila Ahmad Station Development Emulator ===' },
-        { type: 'info', content: '' },
-        { type: 'info', content: 'Available Commands:' },
-        { type: 'output', content: '  System: ls, pwd, whoami, date, uname, ps, htop, clear' },
-        { type: 'output', content: '  Files: cat, nano, vim, code, mkdir, touch, tree' },
-        { type: 'output', content: '  Git: git init/add/commit/push, gh auth/repo' },
-        { type: 'output', content: '  Node.js: npm/yarn/pnpm install/run, node, nodemon' },
-        { type: 'output', content: '  Python: python3, pip, pip3' },
-        { type: 'output', content: '  Cloud: vercel login/deploy, supabase start, firebase' },
-        { type: 'output', content: '  Docker: docker build/run/ps' },
-        { type: 'output', content: '  Fun: neofetch, cowsay, figlet, fortune, cmatrix' },
-        { type: 'info', content: '' },
-        { type: 'warning', content: 'Shortcuts: Ctrl+L (clear), Tab (autocomplete), ↑↓ (history)' }
-      ]
+      output: `Available Commands:
+
+📁 File Operations:
+  ls, dir         - List directory contents
+  cat <file>      - Display file content
+  pwd             - Show current directory
+  mkdir <name>    - Create directory
+  touch <file>    - Create file
+  cd <dir>        - Change directory
+
+🔧 Development Tools:
+  git <command>   - Git version control
+  npm <command>   - Node Package Manager
+  yarn <command>  - Yarn Package Manager
+  node <file>     - Run JavaScript
+  code            - Open VS Code
+
+☁️  Cloud Services:
+  vercel <cmd>    - Vercel deployment
+  supabase <cmd>  - Supabase backend
+  docker <cmd>    - Docker containers
+
+🖥️  System:
+  help            - Show this help
+  clear           - Clear terminal
+  whoami          - Current user
+  date            - Current date/time
+  neofetch        - System information
+  echo <text>     - Print text
+  exit            - Exit terminal
+
+💡 Tip: Use Tab for command completion and ↑/↓ for history`,
+      type: 'info'
     };
   }
 
   private listFiles(args: string[]): CommandResult {
+    const detailed = args.includes('-la') || args.includes('-l');
+    
     const files = [
-      'package.json', 'tsconfig.json', 'tailwind.config.ts', 'vite.config.ts',
-      'src/', 'public/', 'node_modules/', '.git/', 'README.md', '.gitignore'
+      'src/', 'public/', 'package.json', 'vite.config.ts', 
+      'tailwind.config.ts', 'README.md', '.env', 'server.js'
     ];
-    
-    if (args.includes('-la') || args.includes('-al')) {
-      return {
-        type: 'multiline',
-        output: [
-          { type: 'output', content: 'total 42' },
-          { type: 'output', content: 'drwxr-xr-x  8 nabila nabila  4096 Dec  6 10:30 .' },
-          { type: 'output', content: 'drwxr-xr-x  3 nabila nabila  4096 Dec  6 09:15 ..' },
-          { type: 'output', content: 'drwxr-xr-x  8 nabila nabila  4096 Dec  6 10:25 .git' },
-          { type: 'output', content: '-rw-r--r--  1 nabila nabila   157 Dec  6 09:15 .gitignore' },
-          { type: 'output', content: 'drwxr-xr-x  2 nabila nabila  4096 Dec  6 10:30 node_modules' },
-          { type: 'output', content: '-rw-r--r--  1 nabila nabila  1234 Dec  6 10:15 package.json' },
-          { type: 'output', content: 'drwxr-xr-x  2 nabila nabila  4096 Dec  6 10:20 public' },
-          { type: 'output', content: '-rw-r--r--  1 nabila nabila   512 Dec  6 09:30 README.md' },
-          { type: 'output', content: 'drwxr-xr-x  4 nabila nabila  4096 Dec  6 10:25 src' },
-          { type: 'output', content: '-rw-r--r--  1 nabila nabila   789 Dec  6 09:45 tailwind.config.ts' },
-          { type: 'output', content: '-rw-r--r--  1 nabila nabila   456 Dec  6 09:45 tsconfig.json' },
-          { type: 'output', content: '-rw-r--r--  1 nabila nabila   234 Dec  6 09:45 vite.config.ts' }
-        ]
-      };
+
+    if (detailed) {
+      const fileList = files.map(file => {
+        const isDir = file.endsWith('/');
+        const permissions = isDir ? 'drwxr-xr-x' : '-rw-r--r--';
+        const size = isDir ? '4096' : '1024';
+        const date = new Date().toLocaleDateString();
+        return `${permissions}  1 nabila nabila  ${size} ${date} ${file}`;
+      }).join('\n');
+      
+      return { output: `total ${files.length}\n${fileList}`, type: 'success' };
     }
-    
-    return { type: 'output', output: files.join('  ') };
+
+    return { output: files.join('  '), type: 'success' };
   }
 
   private showNeofetch(): CommandResult {
     return {
-      type: 'multiline',
-      output: [
-        { type: 'success', content: '         _,met$$$$$gg.          nabila@station' },
-        { type: 'success', content: '      ,g$$$$$$$$$$$$$$$P.       ----------------' },
-        { type: 'success', content: '    ,g$$P"     """Y$$.".        OS: Ubuntu 22.04.3 LTS x86_64' },
-        { type: 'success', content: '   ,$$P\'              `$$$.     Host: Nabila Station Dev' },
-        { type: 'success', content: '  \',$$P       ,ggs.     `$$b:   Kernel: 5.15.0-91-generic' },
-        { type: 'success', content: '  `d$$\'     ,$P"\'   .    $$$    Uptime: 2 hours, 34 mins' },
-        { type: 'success', content: '   $$P      d$\'     ,    $$P    Packages: 2847 (dpkg), 42 (npm)' },
-        { type: 'success', content: '   $$:      $$.   -    ,d$$\'    Shell: bash 5.1.16' },
-        { type: 'success', content: '   $$;      Y$b._   _,d$P\'      Resolution: 1920x1080' },
-        { type: 'success', content: '   Y$$.    `.`"Y$$$$P"\'         Terminal: Nabila Station Terminal' },
-        { type: 'success', content: '   `$$b      "-.__              CPU: Intel Core i7-12700K (16) @ 3.6GHz' },
-        { type: 'success', content: '    `Y$$                        GPU: NVIDIA GeForce RTX 4070' },
-        { type: 'success', content: '     `Y$$.                      Memory: 4829MiB / 32768MiB' }
-      ]
+      output: `                   -\`                nabila@development-station
+                  .o+\`               ─────────────────────────────────
+                 \`ooo/               OS: Nabila Development Environment
+                \`+oooo:              Host: Lovable Cloud Platform
+               \`+oooooo:             Kernel: React 18.3.1
+               -+oooooo+:            Uptime: Always Online
+             \`/:-:++oooo+:           Packages: ${this.installedPackages.size} (npm)
+            \`/++++/+++++++:          Shell: bash 5.0.0
+           \`/++++++++++++++:         Resolution: Responsive
+          \`/+++ooooooooooooo/\`       DE: Vite + Tailwind CSS
+         ./ooosssso++osssssso+\`      WM: React Router
+        .oossssso-\`\`\`\`/ossssss+\`     Theme: Modern Dark/Light
+       -osssssso.      :ssssssso.    Icons: Lucide React
+      :osssssss/        osssso+++.   Terminal: Nabila Terminal Emulator
+     /ossssssss/        +ssssooo/-   CPU: JavaScript V8 Engine
+   \`/ossssso+/:-        -:/+osssso+- GPU: CSS Animations
+  \`+sso+:-\`                 \`.-/+oso: Memory: Optimized React State
+ \`++:.                           \`-/+/ Disk: Cloud Storage
+ .\`                                 \`/`,
+      type: 'info'
     };
   }
 
   private handleGit(args: string[]): CommandResult {
     if (args.length === 0) {
-      return { type: 'info', output: 'usage: git [--version] [--help] [-C <path>] [-c <name>=<value>]\n           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]\n           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--bare]\n           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]\n           <command> [<args>]' };
+      return { 
+        output: 'usage: git [--version] [--help] [-C <path>] [-c <name>=<value>]\n           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]\n           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--bare]\n           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]\n           [--super-prefix=<path>] [--config-env=<name>=<envvar>]\n           <command> [<args>]',
+        type: 'info' 
+      };
     }
 
     const subcommand = args[0];
     switch (subcommand) {
       case 'init':
-        return { type: 'success', output: 'Initialized empty Git repository in /home/nabila/.git/' };
+        return { output: 'Initialized empty Git repository in /workspace/nabila-development-station/.git/', type: 'success' };
       case 'status':
-        return { type: 'info', output: 'On branch main\nYour branch is up to date with \'origin/main\'.\n\nnothing to commit, working tree clean' };
+        return { 
+          output: `On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+        modified:   src/components/Terminal.tsx
+        new file:   src/components/CommandProcessor.tsx
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+        modified:   README.md`, 
+          type: 'success' 
+        };
       case 'add':
-        return { type: 'success', output: `Added ${args.slice(1).join(' ') || 'files'} to staging area` };
+        const files = args.slice(1).join(' ') || '.';
+        return { output: `Added ${files} to staging area`, type: 'success' };
       case 'commit':
-        const message = args.includes('-m') ? args.slice(args.indexOf('-m') + 1).join(' ') : 'Initial commit';
-        return { type: 'success', output: `[main ${Math.random().toString(36).substr(2, 7)}] ${message}\n 1 file changed, 1 insertion(+)` };
+        const message = args.includes('-m') ? 'Changes committed' : 'Enter commit message (use -m flag)';
+        return { output: `[main ${Math.random().toString(36).substr(2, 7)}] ${message}`, type: 'success' };
       case 'push':
-        return { type: 'success', output: 'Enumerating objects: 3, done.\nCounting objects: 100% (3/3), done.\nWriting objects: 100% (3/3), 242 bytes | 242.00 KiB/s, done.\nTotal 3 (delta 0), reused 0 (delta 0), pack-reused 0\nTo github.com:nabila/project.git\n * [new branch]      main -> main' };
+        return { output: 'Pushing to origin/main...\nEverything up-to-date', type: 'success' };
+      case 'pull':
+        return { output: 'Already up to date.', type: 'success' };
       case 'clone':
-        return { type: 'success', output: `Cloning into '${args[1] || 'repository'}'...\nremote: Enumerating objects: 100, done.\nremote: Total 100 (delta 0), reused 0 (delta 0), pack-reused 100\nReceiving objects: 100% (100/100), done.` };
-      default:
-        return { type: 'output', output: `git ${subcommand}: command executed` };
-    }
-  }
+        const repo = args[1] || 'repository-url';
+        return { output: `Cloning into '${repo.split('/').pop()}'...\nClone completed successfully`, type: 'success' };
+      case 'branch':
+        return { output: '* main\n  development\n  feature/new-terminal', type: 'success' };
+      case 'log':
+        return { 
+          output: `commit a1b2c3d4e5f6 (HEAD -> main, origin/main)
+Author: Nabila Ahmad <nabila@development.com>
+Date:   ${new Date().toDateString()}
 
-  private handleGitHub(args: string[]): CommandResult {
-    if (args.length === 0) {
-      return { type: 'info', output: 'Work seamlessly with GitHub from the command line.\n\nUSAGE\n  gh <command> <subcommand> [flags]\n\nCORE COMMANDS\n  auth:        Authenticate gh and git with GitHub\n  repo:        Manage repositories' };
-    }
+    Enhanced terminal with command processor
 
-    const subcommand = args[0];
-    switch (subcommand) {
-      case 'auth':
-        if (args[1] === 'login') {
-          return { type: 'success', output: '✓ Logged in as nabila-ahmad' };
-        }
-        return { type: 'info', output: 'Manage authentication state' };
-      case 'repo':
-        if (args[1] === 'create') {
-          const repoName = args[2] || 'new-project';
-          return { type: 'success', output: `✓ Created repository nabila-ahmad/${repoName} on GitHub\n✓ Added remote origin` };
-        }
-        return { type: 'info', output: 'Manage repositories' };
+commit f6e5d4c3b2a1
+Author: Nabila Ahmad <nabila@development.com>
+Date:   ${new Date(Date.now() - 86400000).toDateString()}
+
+    Initial development station setup`, 
+          type: 'success' 
+        };
       default:
-        return { type: 'output', output: `gh ${subcommand}: executed` };
+        return { output: `git: '${subcommand}' is not a git command. See 'git --help'.`, type: 'error' };
     }
   }
 
   private handlePackageManager(cmd: string, args: string[]): CommandResult {
     if (args.length === 0) {
-      return { type: 'info', output: `${cmd.toUpperCase()}\nUsage: ${cmd} <command>\n\nwhere <command> is one of:\n    install, run, dev, build, test` };
+      return { 
+        output: `${cmd} <command>\n\nUsage:\n  ${cmd} install [package]\n  ${cmd} run <script>\n  ${cmd} build\n  ${cmd} dev`,
+        type: 'info' 
+      };
     }
 
     const subcommand = args[0];
     switch (subcommand) {
       case 'install':
-        const packages = args.slice(1);
-        if (packages.length > 0) {
-          return { type: 'success', output: `${cmd}: Installing ${packages.join(', ')}...\n✓ Packages installed successfully` };
+      case 'add':
+        const pkg = args[1];
+        if (pkg) {
+          this.installedPackages.add(pkg);
+          return { output: `✅ Successfully installed ${pkg}`, type: 'success' };
         }
-        return { type: 'success', output: `${cmd}: Installing dependencies...\n✓ Dependencies installed successfully` };
+        return { output: `Installing dependencies...\n✅ All dependencies installed successfully`, type: 'success' };
       case 'run':
-        const script = args[1] || 'dev';
-        return { type: 'success', output: `> ${script}\n\n  Local:   http://localhost:5173/\n  Network: http://192.168.1.100:5173/\n\n  ready in 1.2s` };
+        const script = args[1];
+        if (script === 'dev') {
+          return { output: '🚀 Development server starting...\n  Local:   http://localhost:5173/', type: 'success' };
+        } else if (script === 'build') {
+          return { output: '📦 Building for production...\n✅ Build completed successfully', type: 'success' };
+        }
+        return { output: `Running script: ${script}`, type: 'success' };
       case 'dev':
-        return { type: 'success', output: '  VITE v5.0.0  ready in 1.2s\n\n  ➜  Local:   http://localhost:5173/\n  ➜  Network: http://192.168.1.100:5173/' };
+        return { output: '🚀 Development server starting...\n  Local:   http://localhost:5173/', type: 'success' };
       case 'build':
-        return { type: 'success', output: 'vite build\n✓ built in 2.34s\ndist/index.html                  0.46 kB │ gzip:  0.30 kB\ndist/assets/index-a1b2c3d4.js  143.21 kB │ gzip: 46.12 kB\n✓ Build completed' };
+        return { output: '📦 Building for production...\n✅ Build completed successfully', type: 'success' };
+      case 'list':
+        return { output: Array.from(this.installedPackages).join('\n'), type: 'success' };
       default:
-        return { type: 'output', output: `${cmd} ${subcommand}: executed` };
+        return { output: `Unknown command: ${subcommand}`, type: 'error' };
     }
   }
 
   private handleNode(args: string[]): CommandResult {
     if (args.length === 0) {
-      return { type: 'info', output: 'Welcome to Node.js v20.10.0.\nType ".help" for more information.' };
+      return { output: 'Welcome to Node.js v20.10.0.\nType ".help" for more information.', type: 'success' };
     }
-    if (args[0] === '--version' || args[0] === '-v') {
-      return { type: 'output', output: 'v20.10.0' };
-    }
-    return { type: 'success', output: `Node.js script executed: ${args.join(' ')}` };
-  }
-
-  private handlePython(args: string[]): CommandResult {
-    if (args.length === 0) {
-      return { type: 'info', output: 'Python 3.11.6 (main, Oct  8 2023, 05:06:43) [GCC 13.2.0] on linux\nType "help", "copyright", "credits" or "license" for more information.\n>>> ' };
-    }
-    if (args[0] === '--version') {
-      return { type: 'output', output: 'Python 3.11.6' };
-    }
-    return { type: 'success', output: `Python script executed: ${args.join(' ')}` };
+    
+    const file = args[0];
+    return { output: `Executing ${file}...\n✅ Script executed successfully`, type: 'success' };
   }
 
   private handleVercel(args: string[]): CommandResult {
     if (args.length === 0) {
-      return { type: 'info', output: 'Vercel CLI 32.7.2\nUsage: vercel <command>\n\nCommands:\n  login    Login to Vercel\n  deploy   Deploy project\n  dev      Start development server' };
+      return { 
+        output: `Vercel CLI 32.5.0
+Usage: vercel [options] [command]
+
+Commands:
+  login     Login to Vercel
+  deploy    Deploy project
+  dev       Start development server
+  build     Build project
+  env       Manage environment variables`,
+        type: 'info' 
+      };
     }
 
-    switch (args[0]) {
+    const subcommand = args[0];
+    switch (subcommand) {
       case 'login':
-        return { type: 'success', output: '> Success! Logged in as nabila@example.com' };
+        return { output: '🔐 Login successful! Welcome to Vercel.', type: 'success' };
       case 'deploy':
-        return { type: 'success', output: '🔗  Preview: https://project-abc123.vercel.app\n✅  Production: https://project.vercel.app' };
+        return { 
+          output: `🔍 Inspecting project...
+🚀 Deploying to production...
+✅ Deployment ready: https://nabila-station-${Math.random().toString(36).substr(2, 8)}.vercel.app`,
+          type: 'success' 
+        };
       case 'dev':
-        return { type: 'success', output: 'Vercel CLI 32.7.2 dev\n> Ready! Available at http://localhost:3000' };
+        return { output: '🚀 Vercel dev server starting...\n  Ready on http://localhost:3000', type: 'success' };
+      case 'build':
+        return { output: '📦 Building for Vercel...\n✅ Build ready for deployment', type: 'success' };
+      case 'env':
+        return { output: 'Environment variables:\n  VITE_SUPABASE_URL=***\n  VITE_SUPABASE_ANON_KEY=***', type: 'success' };
       default:
-        return { type: 'output', output: `vercel ${args[0]}: executed` };
+        return { output: `vercel: command not found: ${subcommand}`, type: 'error' };
     }
   }
 
   private handleSupabase(args: string[]): CommandResult {
     if (args.length === 0) {
-      return { type: 'info', output: 'Supabase CLI 1.123.4\n\nUSAGE\n  supabase [command]\n\nAVAILABLE COMMANDS\n  login       Login to Supabase\n  start       Start containers\n  db          Manage databases' };
+      return { 
+        output: `Supabase CLI 1.123.4
+Usage: supabase [command]
+
+Commands:
+  login     Login to Supabase
+  start     Start local development
+  stop      Stop local development
+  db        Database commands
+  gen       Generate types`,
+        type: 'info' 
+      };
     }
 
-    switch (args[0]) {
+    const subcommand = args[0];
+    switch (subcommand) {
       case 'login':
-        return { type: 'success', output: '✓ Logged in to Supabase.' };
+        return { output: '🔑 Supabase login successful!', type: 'success' };
       case 'start':
-        return { type: 'success', output: 'Starting supabase local development setup...\n✓ Started supabase local development setup.\n\nAPI URL: http://localhost:54321\nDB URL: postgresql://postgres:postgres@localhost:54322/postgres\nStudio URL: http://localhost:54323' };
+        return { 
+          output: `🚀 Starting Supabase local development...
+✅ Database started
+✅ API Gateway started
+✅ Auth started
+  Studio URL: http://localhost:54323
+  API URL: http://localhost:54321`,
+          type: 'success' 
+        };
+      case 'stop':
+        return { output: '⏹️  Supabase local development stopped', type: 'success' };
       case 'db':
-        if (args[1] === 'reset') {
-          return { type: 'success', output: 'Resetting the local database...\n✓ Finished supabase db reset.' };
+        if (args[1] === 'push') {
+          return { output: '📤 Pushing database changes...\n✅ Database updated successfully', type: 'success' };
+        } else if (args[1] === 'pull') {
+          return { output: '📥 Pulling database changes...\n✅ Local database synced', type: 'success' };
         }
-        return { type: 'info', output: 'Manage your Supabase database' };
+        return { output: 'Database commands: push, pull, reset', type: 'info' };
+      case 'gen':
+        if (args[1] === 'types') {
+          return { output: '🔧 Generating TypeScript types...\n✅ Types generated successfully', type: 'success' };
+        }
+        return { output: 'Generate commands: types', type: 'info' };
       default:
-        return { type: 'output', output: `supabase ${args[0]}: executed` };
+        return { output: `supabase: command not found: ${subcommand}`, type: 'error' };
     }
-  }
-
-  private handleEditor(cmd: string, args: string[]): CommandResult {
-    const file = args[0] || 'untitled';
-    return { type: 'success', output: `Opening ${file} in ${cmd}...\n[Editor simulation - file would open here]` };
-  }
-
-  private handleVSCode(args: string[]): CommandResult {
-    const target = args[0] || '.';
-    return { type: 'success', output: `Opening ${target} in Visual Studio Code...\n[VSCode would launch here]` };
-  }
-
-  private handlePackageInstall(args: string[]): CommandResult {
-    if (args.length === 0) {
-      return { type: 'info', output: 'apt - package manager\nUsage: apt install <package>' };
-    }
-    
-    if (args[0] === 'update') {
-      return { type: 'success', output: 'Hit:1 http://archive.ubuntu.com/ubuntu jammy InRelease\nReading package lists... Done' };
-    }
-    
-    if (args[0] === 'install') {
-      const packages = args.slice(1);
-      return { type: 'success', output: `Reading package lists... Done\nBuilding dependency tree... Done\nThe following NEW packages will be installed:\n  ${packages.join(' ')}\n0 upgraded, ${packages.length} newly installed, 0 to remove and 0 not upgraded.\n✓ Packages installed successfully` };
-    }
-    
-    return { type: 'output', output: `apt ${args.join(' ')}: executed` };
   }
 
   private handleDocker(args: string[]): CommandResult {
     if (args.length === 0) {
-      return { type: 'info', output: 'Docker version 24.0.7, build afdd53b\n\nUsage:  docker [OPTIONS] COMMAND\n\nA self-sufficient runtime for containers' };
+      return { 
+        output: `Docker version 24.0.6
+Usage: docker [OPTIONS] COMMAND
+
+Commands:
+  build     Build an image
+  run       Run a container
+  ps        List containers
+  images    List images
+  pull      Pull an image`,
+        type: 'info' 
+      };
     }
 
-    switch (args[0]) {
+    const subcommand = args[0];
+    switch (subcommand) {
       case 'ps':
-        return { type: 'output', output: 'CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES' };
+        return { 
+          output: `CONTAINER ID   IMAGE     COMMAND                  CREATED       STATUS       PORTS     NAMES
+a1b2c3d4e5f6   postgres  "docker-entrypoint.s…"   2 hours ago   Up 2 hours   5432/tcp  supabase_db`,
+          type: 'success' 
+        };
+      case 'images':
+        return { 
+          output: `REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+postgres     latest    a1b2c3d4e5f6   2 weeks ago   379MB
+node         18        f6e5d4c3b2a1   3 weeks ago   993MB`,
+          type: 'success' 
+        };
       case 'build':
-        return { type: 'success', output: 'Building Docker image...\n✓ Successfully built docker-image:latest' };
+        return { output: '🔨 Building Docker image...\n✅ Image built successfully', type: 'success' };
       case 'run':
-        return { type: 'success', output: `Running container: ${args.slice(1).join(' ')}` };
+        const image = args[1] || 'image';
+        return { output: `🏃 Running container from ${image}...\n✅ Container started`, type: 'success' };
+      case 'pull':
+        const pullImage = args[1] || 'image';
+        return { output: `⬇️  Pulling ${pullImage}...\n✅ Pull complete`, type: 'success' };
       default:
-        return { type: 'output', output: `docker ${args[0]}: executed` };
+        return { output: `docker: '${subcommand}' is not a docker command.`, type: 'error' };
     }
-  }
-
-  private handleCowsay(args: string[]): CommandResult {
-    const message = args.join(' ') || 'Hello from Nabila Station!';
-    return {
-      type: 'multiline',
-      output: [
-        { type: 'output', content: ` ${'-'.repeat(message.length + 2)}` },
-        { type: 'output', content: `< ${message} >` },
-        { type: 'output', content: ` ${'-'.repeat(message.length + 2)}` },
-        { type: 'output', content: '        \\   ^__^' },
-        { type: 'output', content: '         \\  (oo)\\_______' },
-        { type: 'output', content: '            (__)\\       )\\/\\' },
-        { type: 'output', content: '                ||----w |' },
-        { type: 'output', content: '                ||     ||' }
-      ]
-    };
-  }
-
-  private handleFiglet(args: string[]): CommandResult {
-    const text = args.join(' ') || 'NABILA';
-    return { type: 'success', output: `\n ███▄    █  ▄▄▄       ▄▄▄▄    ██▓ ██▓    ▄▄▄      \n ██ ▀█   █ ▒████▄    ▓█████▄ ▓██▒▓██▒   ▒████▄    \n▓██  ▀█ ██▒▒██  ▀█▄  ▒██▒ ▄██▒██▒▒██░   ▒██  ▀█▄  \n▓██▒  ▐▌██▒░██▄▄▄▄██ ▒██░█▀  ░██░▒██░   ░██▄▄▄▄██ \n▒██░   ▓██░ ▓█   ▓██▒░▓█  ▀█▓░██░░██████▒▓█   ▓██▒\n░ ▒░   ▒ ▒  ▒▒   ▓▒█░░▒▓███▀▒░▓  ░ ▒░▓  ░▒▒   ▓▒█░\n░ ░░   ░ ▒░  ▒   ▒▒ ░▒░▒   ░  ▒ ░░ ░ ▒  ░ ▒   ▒▒ ░\n   ░   ░ ░   ░   ▒    ░    ░  ▒ ░  ░ ░    ░   ▒   \n         ░       ░  ░ ░       ░      ░  ░     ░  ░\n                           ░                      ` };
-  }
-
-  private handleFortune(): CommandResult {
-    const fortunes = [
-      "The best way to predict the future is to implement it. - Alan Kay",
-      "Code is like humor. When you have to explain it, it's bad. - Cory House",
-      "Programs must be written for people to read, and only incidentally for machines to execute. - Harold Abelson",
-      "The most important property of a program is whether it accomplishes the intention of its user. - C.A.R. Hoare",
-      "Debugging is twice as hard as writing the code in the first place. - Brian Kernighan"
-    ];
-    return { type: 'info', output: fortunes[Math.floor(Math.random() * fortunes.length)] };
-  }
-
-  private showHtop(): CommandResult {
-    return {
-      type: 'multiline',
-      output: [
-        { type: 'success', content: '  1  [████████████████████████████████ 45.2%]   Tasks: 234, 1024 thr; 2 running' },
-        { type: 'success', content: '  2  [██████████████████████████       31.8%]   Load average: 1.24 0.89 0.73' },
-        { type: 'success', content: '  3  [████████████████████████████████ 52.1%]   Uptime: 02:34:21' },
-        { type: 'success', content: '  4  [██████████████████████           28.9%]   ' },
-        { type: 'info', content: '  Mem[████████████████████████████████ 15.2G/32.0G]' },
-        { type: 'info', content: '  Swp[                                  0K/2.00G]' },
-        { type: 'output', content: '' },
-        { type: 'output', content: '  PID USER      PRI  NI  VIRT   RES   SHR S CPU% MEM%   TIME+  Command' },
-        { type: 'output', content: '12345 nabila     20   0  1.2G  256M   64M S  2.0  0.8  0:15.23 code' },
-        { type: 'output', content: '12346 nabila     20   0  512M  128M   32M S  1.5  0.4  0:08.45 node' },
-        { type: 'output', content: '12347 nabila     20   0  256M   64M   16M S  0.5  0.2  0:03.12 git' }
-      ]
-    };
-  }
-
-  private showProcesses(): CommandResult {
-    return {
-      type: 'multiline',
-      output: [
-        { type: 'output', content: '  PID TTY          TIME CMD' },
-        { type: 'output', content: '12345 pts/0    00:00:15 bash' },
-        { type: 'output', content: '12346 pts/0    00:00:08 node' },
-        { type: 'output', content: '12347 pts/0    00:00:03 git' },
-        { type: 'output', content: '12348 pts/0    00:00:01 npm' }
-      ]
-    };
-  }
-
-  private handleUname(args: string[]): CommandResult {
-    if (args.includes('-a')) {
-      return { type: 'output', output: 'Linux station 5.15.0-91-generic #101-Ubuntu SMP Tue Nov 14 13:30:08 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux' };
-    }
-    return { type: 'output', output: 'Linux' };
   }
 
   private handleCat(args: string[]): CommandResult {
     if (args.length === 0) {
-      return { type: 'error', output: 'cat: missing file operand' };
+      return { output: 'cat: missing file operand', type: 'error' };
     }
-    
+
     const file = args[0];
-    const sampleFiles: Record<string, string> = {
-      'package.json': '{\n  "name": "nabila-station",\n  "version": "1.0.0",\n  "scripts": {\n    "dev": "vite",\n    "build": "vite build"\n  }\n}',
-      'README.md': '# Nabila Ahmad Station\n\nA modern development environment.\n\n## Getting Started\n\n```bash\nnpm run dev\n```',
-      '.gitignore': 'node_modules/\ndist/\n.env\n*.log'
+    const mockFiles: Record<string, string> = {
+      'package.json': JSON.stringify({
+        name: "nabila-development-station",
+        version: "1.0.0",
+        scripts: {
+          dev: "vite",
+          build: "vite build"
+        }
+      }, null, 2),
+      'README.md': `# Nabila Ahmad Development Station
+
+🚀 A comprehensive development environment built by Nabila Ahmad
+
+## Features
+- Terminal Emulator
+- Git Integration  
+- Package Management
+- Cloud Deployment
+- Database Management
+
+## Quick Start
+\`\`\`bash
+npm install
+npm run dev
+\`\`\``,
+      '.env': `VITE_SUPABASE_URL=https://myspriwgycyymelgyttu.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`,
+      'vite.config.ts': `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+})`
     };
-    
-    return { type: 'output', output: sampleFiles[file] || `cat: ${file}: No such file or directory` };
-  }
 
-  private handleMkdir(args: string[]): CommandResult {
-    if (args.length === 0) {
-      return { type: 'error', output: 'mkdir: missing operand' };
+    if (mockFiles[file]) {
+      return { output: mockFiles[file], type: 'success' };
     }
-    return { type: 'success', output: `Directory '${args[0]}' created` };
-  }
 
-  private handleTouch(args: string[]): CommandResult {
-    if (args.length === 0) {
-      return { type: 'error', output: 'touch: missing file operand' };
-    }
-    return { type: 'success', output: `File '${args[0]}' created` };
+    return { output: `cat: ${file}: No such file or directory`, type: 'error' };
   }
 
   getCompletions(command: string): string[] {
     const commands = [
-      'help', 'ls', 'pwd', 'whoami', 'date', 'clear', 'neofetch', 'git', 'gh', 'npm', 'yarn', 'pnpm',
-      'node', 'python3', 'vercel', 'supabase', 'nano', 'vim', 'code', 'apt', 'docker', 'cowsay',
-      'figlet', 'fortune', 'cmatrix', 'htop', 'ps', 'uname', 'cat', 'mkdir', 'touch', 'echo'
+      'help', 'clear', 'ls', 'pwd', 'whoami', 'date', 'neofetch',
+      'git', 'npm', 'yarn', 'node', 'vercel', 'supabase', 'cat',
+      'echo', 'mkdir', 'cd', 'touch', 'docker', 'code', 'exit'
     ];
-    
+
     return commands.filter(cmd => cmd.startsWith(command.toLowerCase()));
   }
 }
