@@ -1,1 +1,4 @@
 project_id = "myspriwgycyymelgyttu"
+
+[functions.terminal-executor]
+verify_jwt = false

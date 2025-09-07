@@ -1,18 +1,17 @@
 import { useState, useRef, useEffect } from "react";
-import { CommandProcessor } from "./CommandProcessor";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Terminal() {
   const [command, setCommand] = useState("");
   const [history, setHistory] = useState<Array<{text: string, type: 'input' | 'output' | 'error'}>>([
     { text: "Welcome to Nabila Ahmad Development Station! 🚀", type: 'output' },
-    { text: "Type 'help' to see available commands.", type: 'output' },
+    { text: "Real Linux Terminal - Execute any command you want!", type: 'output' },
     { text: "", type: 'output' }
   ]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
-  const processor = useRef(new CommandProcessor());
 
   useEffect(() => {
     // Auto-scroll to bottom when new content is added
@@ -29,24 +28,38 @@ export default function Terminal() {
     setCommandHistory(prev => [...prev, command]);
     setHistoryIndex(-1);
 
+    // Handle clear command locally
+    if (command.trim() === 'clear') {
+      setHistory([
+        { text: "Welcome to Nabila Ahmad Development Station! 🚀", type: 'output' },
+        { text: "Type any Linux/Unix command to execute it.", type: 'output' },
+        { text: "", type: 'output' }
+      ]);
+      setCommand("");
+      return;
+    }
+
     try {
-      const result = await processor.current.process(command);
-      
-      if (result.output === 'CLEAR_TERMINAL') {
-        setHistory([
-          { text: "Welcome to Nabila Ahmad Development Station! 🚀", type: 'output' },
-          { text: "Type 'help' to see available commands.", type: 'output' },
-          { text: "", type: 'output' }
-        ]);
-      } else {
+      // Execute command on real server
+      const { data, error } = await supabase.functions.invoke('terminal-executor', {
+        body: { command: command.trim() }
+      });
+
+      if (error) {
         setHistory(prev => [...prev, { 
-          text: result.output, 
-          type: result.type === 'error' ? 'error' : 'output' 
+          text: `Error: ${error.message}`, 
+          type: 'error' 
+        }]);
+      } else {
+        const output = data?.output || 'Command executed successfully';
+        setHistory(prev => [...prev, { 
+          text: output, 
+          type: 'output' 
         }]);
       }
     } catch (err) {
       setHistory(prev => [...prev, { 
-        text: "Error: Command execution failed", 
+        text: `Error: Failed to execute command - ${err}`, 
         type: 'error' 
       }]);
     }
@@ -75,17 +88,6 @@ export default function Terminal() {
           setHistoryIndex(newIndex);
           setCommand(commandHistory[newIndex]);
         }
-      }
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      const completions = processor.current.getCompletions(command);
-      if (completions.length === 1) {
-        setCommand(completions[0]);
-      } else if (completions.length > 1) {
-        setHistory(prev => [...prev, { 
-          text: completions.join('  '), 
-          type: 'output' 
-        }]);
       }
     }
   };
